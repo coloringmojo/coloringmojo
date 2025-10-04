@@ -51,3 +51,26 @@ function printImage(url) {
     win.close();
   };
 }
+async function loadPosts() {
+  const feed = '/feeds/posts/default?alt=json&max-results=8';
+  try {
+    const response = await fetch(feed);
+    const data = await response.json();
+    const entries = data.feed.entry || [];
+    const grid = document.getElementById('post-grid');
+    entries.forEach(entry => {
+      const title = entry.title.$t;
+      const link = entry.link.find(l => l.rel === 'alternate').href;
+      const thumb = entry.media$thumbnail ? entry.media$thumbnail.url.replace('/s72-c/', '/s600/') : 'https://via.placeholder.com/600x800';
+      const html = `
+        <a href="${link}" class="post-card">
+          <img src="${thumb}" alt="${title}">
+          <h2>${title}</h2>
+        </a>`;
+      grid.insertAdjacentHTML('beforeend', html);
+    });
+  } catch (err) {
+    console.error('Error loading posts:', err);
+  }
+}
+document.addEventListener('DOMContentLoaded', loadPosts);
